@@ -4,11 +4,10 @@ phases:
   install:
     commands:
       - wget -O - -q https://raw.githubusercontent.com/securego/gosec/master/install.sh | sh -s v2.8.1
-  pre_build:
-    commands:
       - mv ./bin/gosec .
   build:
     commands:
+      - echo Start sast...
       - mkdir reports
       - ./gosec -fmt=JUnit-XML -out=reports/results.xml ./...
   post_build:
