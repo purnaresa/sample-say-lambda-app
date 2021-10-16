@@ -9,10 +9,10 @@ phases:
     commands:
       - echo Start sast...
       - mkdir reports
-      - ./gosec -fmt=JUnit-XML -out=reports/results.xml ./...
+      - ./gosec -fmt=JUnit-XML -out=reports/sast-results.xml ./...
   post_build:
     commands:
-      - less reports/results.xml
+      - less reports/sast-results.xml
 artifacts:
   files:
-    - reports/results.xml
+    - reports/sast-results.xml
