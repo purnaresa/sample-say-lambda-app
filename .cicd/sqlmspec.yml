@@ -16,4 +16,4 @@ phases:
       - less reports/sqlm-results.txt
 artifacts:
   files:
-    - reports/sqlm-results.txt
+    - sqlmap/reports/sqlm-results.txt
