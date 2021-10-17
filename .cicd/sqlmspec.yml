@@ -9,7 +9,7 @@ phases:
     commands:
       - echo Start SQLMap...
       - mkdir reports
-      - python3 sqlmap.py -u https://36iqwlm5nj.execute-api.us-east-2.amazonaws.com/say?lp=1 --batch -v 0 --alert="CODEBUILD_BUILD_SUCCEEDING=0" > reports/sqlm-results.txt
+      - python3 sqlmap.py -u https://36iqwlm5nj.execute-api.us-east-2.amazonaws.com/say?lp=1 --batch -v 0 --alert="CODEBUILD_BUILD_SUCCEEDING=0 && exit 1" > reports/sqlm-results.txt
   post_build:
     commands:
       - less reports/sqlm-results.txt
