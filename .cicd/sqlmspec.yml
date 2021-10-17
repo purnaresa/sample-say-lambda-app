@@ -9,9 +9,10 @@ phases:
     commands:
       - echo Start SQLMap...
       - mkdir reports
-      - python3 sqlmap.py -u https://36iqwlm5nj.execute-api.us-east-2.amazonaws.com/say?lp=1 --batch -v 0 --alert="CODEBUILD_BUILD_SUCCEEDING=0 && exit 1" > reports/sqlm-results.txt
+      - python3 sqlmap.py -u https://36iqwlm5nj.execute-api.us-east-2.amazonaws.com/say?lp=1 --batch -v 0 --alert="export CODEBUILD_BUILD_SUCCEEDING=0 && touch finding.txt" > reports/sqlm-results.txt
   post_build:
     commands:
+      - ls
       - less reports/sqlm-results.txt
 artifacts:
   files:
