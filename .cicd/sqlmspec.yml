@@ -15,7 +15,7 @@ phases:
       - ls
       - echo $CODEBUILD_BUILD_SUCCEEDING
       - less reports/sqlm-results.txt
-      - [ -f finding.txt ] && exit 1
+      - if [ -f finding.txt ]; then exit 1; fi
 artifacts:
   files:
     - sqlmap/reports/sqlm-results.txt
