@@ -88,14 +88,14 @@ func getSecret() {
 		Password  string `json:"password"`
 		Host      string `json:"host"`
 		Port      int    `json:"port"`
-		DBDefault string `json:"db-default"`
+		DBDefault string `json:"dbname"`
 	}
 
 	secretDBName := viper.GetString("secret_manager_db")
 	region := viper.GetString("region")
 	svc := secretsmanager.New(session.New(),
 		aws.NewConfig().WithRegion(region))
-
+	log.Debugln(svc)
 	//get db
 	inputDb := &secretsmanager.GetSecretValueInput{
 		SecretId: aws.String(secretDBName),
@@ -105,6 +105,7 @@ func getSecret() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	log.Debugln(resultDb)
 	db := dbCredential{}
 	err = json.Unmarshal([]byte(*resultDb.SecretString), &db)
 	if err != nil {
