@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	log "github.com/sirupsen/logrus"
 )
@@ -22,24 +23,15 @@ func init() {
 	}
 }
 
-type MyEvent struct {
-	Name string `json:"name"`
-}
+func hello(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	lp := request.QueryStringParameters["lp"]
 
-func hello(ctx context.Context, name MyEvent) (string, error) {
-	return fmt.Sprintf("Hello Amazonian World %s!", name.Name), nil
+	return events.APIGatewayProxyResponse{
+		Body:       fmt.Sprintf("Hello Amazonian World %s!", lp),
+		StatusCode: 200,
+	}, nil
 }
 
 func main() {
-	// Make the handler available for Remote Procedure Call by AWS Lambda
-	if isLambda == true {
-		lambda.Start(hello)
-
-	} else {
-		out, err := hello(nil, MyEvent{Name: "a"})
-		if err != nil {
-			log.Fatalln(err)
-		}
-		log.Infoln(out)
-	}
+	lambda.Start(hello)
 }
