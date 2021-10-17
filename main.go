@@ -22,7 +22,6 @@ var (
 )
 
 func init() {
-
 	log.WithField("status", "starting").Debug("initialize")
 	log.SetLevel(log.DebugLevel)
 	log.SetReportCaller(true)
@@ -83,6 +82,7 @@ func readLp(input string) (output string, err error) {
 }
 
 func getSecret() {
+	log.WithField("status", "starting").Debug("getSecret")
 	type dbCredential struct {
 		Username  string `json:"username"`
 		Password  string `json:"password"`
@@ -93,7 +93,6 @@ func getSecret() {
 
 	secretDBName := viper.GetString("secret_manager_db")
 	region := viper.GetString("region")
-	log.Printf("region:%s\n", region)
 	svc := secretsmanager.New(session.New(),
 		aws.NewConfig().WithRegion(region))
 
@@ -117,7 +116,7 @@ func getSecret() {
 	viper.Set("DB-PASSWORD", db.Password)
 	viper.Set("DB-HOST", fmt.Sprintf("%s:%d", db.Host, db.Port))
 	viper.Set("DB-DEFAULT", db.DBDefault)
-
+	log.WithField("status", "success").Info("getSecret")
 }
 
 func main() {
