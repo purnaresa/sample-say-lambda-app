@@ -22,9 +22,12 @@ var (
 )
 
 func init() {
-	log.SetLevel(log.DebugLevel)
-	log.WithField("status", "starting").Debug("initialize")
 
+	log.WithField("status", "starting").Debug("initialize")
+	log.SetLevel(log.DebugLevel)
+	log.SetReportCaller(true)
+	viper.SetEnvPrefix("sample")
+	viper.AutomaticEnv()
 	getSecret()
 	db = connectRDS()
 
@@ -90,7 +93,7 @@ func getSecret() {
 
 	secretDBName := viper.GetString("secret_manager_db")
 	region := viper.GetString("region")
-
+	log.Printf("region:%s\n", region)
 	svc := secretsmanager.New(session.New(),
 		aws.NewConfig().WithRegion(region))
 
