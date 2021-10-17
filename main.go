@@ -85,7 +85,7 @@ func readLp(input string) (output string, err error) {
 func readLpSecure(input string) (output string, err error) {
 	log.WithField("status", "starting").Info("readLpSecure")
 
-	err = db.QueryRow("SELECT value from lp where id='?'", input).Scan(&output)
+	err = db.QueryRow("SELECT value from lp where id=?", input).Scan(&output)
 
 	log.WithField("status", "success").Info("readLpSecure")
 	return
