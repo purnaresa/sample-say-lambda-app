@@ -59,7 +59,7 @@ func connectRDS() (db *sql.DB) {
 
 func say(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	lp := request.QueryStringParameters["lp"]
-	value, err := readLp("lp")
+	value, err := readLp(lp)
 	if err != nil {
 		return events.APIGatewayProxyResponse{
 			Body:       err.Error(),
@@ -73,12 +73,12 @@ func say(ctx context.Context, request events.APIGatewayProxyRequest) (events.API
 }
 
 func readLp(input string) (output string, err error) {
-	log.WithField("status", "starting").Info("connectRDS")
+	log.WithField("status", "starting").Info("readLp")
 
 	query := fmt.Sprintf("SELECT value from lp where id='%s'", input)
 	err = db.QueryRow(query).Scan(&output)
 
-	log.WithField("status", "success").Info("connectRDS")
+	log.WithField("status", "success").Info("readLp")
 	return
 }
 
