@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"net/http"
 
-	sq "github.com/Masterminds/squirrel"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
@@ -85,10 +84,8 @@ func readLp(input string) (output string, err error) {
 
 func readLpSecure(input string) (output string, err error) {
 	log.WithField("status", "starting").Info("readLpSecure")
-	sql, args, err := sq.Select("value").From("lp").Where(sq.Eq{"id": input}).ToSql()
-	log.Debug(sql)
-	log.Debug(args)
-	err = db.QueryRow(sql, args).Scan(&output)
+
+	err = db.QueryRow("SELECT value from lp where id='?'", input).Scan(&output)
 
 	log.WithField("status", "success").Info("readLpSecure")
 	return
