@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
@@ -59,7 +60,7 @@ func connectRDS() (db *sql.DB) {
 
 func say(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	lp := request.QueryStringParameters["lp"]
-	value, err := readLp(lp)
+	value, err := readLpSecure(lp)
 	if err != nil {
 		return events.APIGatewayProxyResponse{
 			Body:       err.Error(),
@@ -79,6 +80,17 @@ func readLp(input string) (output string, err error) {
 	err = db.QueryRow(query).Scan(&output)
 
 	log.WithField("status", "success").Info("readLp")
+	return
+}
+
+func readLpSecure(input string) (output string, err error) {
+	log.WithField("status", "starting").Info("readLpSecure")
+	sql, args, err := sq.Select("value").From("lp").Where(sq.Eq{"id": input}).ToSql()
+	log.Debug(sql)
+	log.Debug(args)
+	err = db.QueryRow(sql, args).Scan(&output)
+
+	log.WithField("status", "success").Info("readLpSecure")
 	return
 }
 

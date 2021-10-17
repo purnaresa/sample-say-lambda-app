@@ -3,6 +3,7 @@ module sample-say
 go 1.16
 
 require (
+	github.com/Masterminds/squirrel v1.5.1
 	github.com/aws/aws-lambda-go v1.27.0
 	github.com/aws/aws-sdk-go v1.41.4
 	github.com/go-sql-driver/mysql v1.6.0
