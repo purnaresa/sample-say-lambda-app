@@ -13,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
+	_ "github.com/go-sql-driver/mysql"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -95,7 +96,7 @@ func getSecret() {
 	region := viper.GetString("region")
 	svc := secretsmanager.New(session.New(),
 		aws.NewConfig().WithRegion(region))
-	log.Debugln(svc)
+
 	//get db
 	inputDb := &secretsmanager.GetSecretValueInput{
 		SecretId: aws.String(secretDBName),
@@ -105,7 +106,7 @@ func getSecret() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	log.Debugln(resultDb)
+
 	db := dbCredential{}
 	err = json.Unmarshal([]byte(*resultDb.SecretString), &db)
 	if err != nil {
