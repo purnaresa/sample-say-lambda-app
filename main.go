@@ -3,35 +3,120 @@ package main
 
 import (
 	"context"
+	"database/sql"
+	"encoding/json"
 	"fmt"
-	"os"
+	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/secretsmanager"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
-var isLambda bool
+var (
+	db *sql.DB
+)
 
 func init() {
-	isLambda = len(os.Getenv("_LAMBDA_SERVER_PORT")) > 0
-	log.SetReportCaller(true)
-	if isLambda {
-		log.SetLevel(log.InfoLevel)
-	} else {
-		log.SetLevel(log.DebugLevel)
+	log.SetLevel(log.DebugLevel)
+	log.WithField("status", "starting").Debug("initialize")
+
+	getSecret()
+	db = connectRDS()
+
+	log.WithField("status", "success").Debug("initialize")
+
+}
+func connectRDS() (db *sql.DB) {
+	log.WithField("status", "starting").Info("connectRDS")
+
+	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s",
+		viper.GetString("DB-USER"),
+		viper.GetString("DB-PASSWORD"),
+		viper.GetString("DB-HOST"),
+		viper.GetString("DB-DEFAULT"),
+	)
+
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		panic(err)
 	}
+	err = db.Ping()
+	if err != nil {
+		panic(err)
+	}
+
+	log.WithField("status", "success").Info("connectRDS")
+	return
 }
 
-func hello(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func say(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	lp := request.QueryStringParameters["lp"]
-
+	value, err := readLp("lp")
+	if err != nil {
+		return events.APIGatewayProxyResponse{
+			Body:       err.Error(),
+			StatusCode: http.StatusInternalServerError,
+		}, err
+	}
 	return events.APIGatewayProxyResponse{
-		Body:       fmt.Sprintf("Hello Amazonian World %s!", lp),
-		StatusCode: 200,
+		Body:       fmt.Sprintf("Leadership Principles number %s is %s", lp, value),
+		StatusCode: http.StatusOK,
 	}, nil
 }
 
+func readLp(input string) (output string, err error) {
+	log.WithField("status", "starting").Info("connectRDS")
+
+	query := fmt.Sprintf("SELECT value from lp where id='%s'", input)
+	err = db.QueryRow(query).Scan(&output)
+
+	log.WithField("status", "success").Info("connectRDS")
+	return
+}
+
+func getSecret() {
+	type dbCredential struct {
+		Username  string `json:"username"`
+		Password  string `json:"password"`
+		Host      string `json:"host"`
+		Port      int    `json:"port"`
+		DBDefault string `json:"db-default"`
+	}
+
+	secretDBName := viper.GetString("secret_manager_db")
+	region := viper.GetString("region")
+
+	svc := secretsmanager.New(session.New(),
+		aws.NewConfig().WithRegion(region))
+
+	//get db
+	inputDb := &secretsmanager.GetSecretValueInput{
+		SecretId: aws.String(secretDBName),
+	}
+
+	resultDb, err := svc.GetSecretValue(inputDb)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	db := dbCredential{}
+	err = json.Unmarshal([]byte(*resultDb.SecretString), &db)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	//
+
+	viper.Set("DB-USER", db.Username)
+	viper.Set("DB-PASSWORD", db.Password)
+	viper.Set("DB-HOST", fmt.Sprintf("%s:%d", db.Host, db.Port))
+	viper.Set("DB-DEFAULT", db.DBDefault)
+
+}
+
 func main() {
-	lambda.Start(hello)
+	lambda.Start(say)
 }
