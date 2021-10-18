@@ -59,7 +59,7 @@ func connectRDS() (db *sql.DB) {
 
 func say(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	lp := request.QueryStringParameters["lp"]
-	value, err := readLp(lp)
+	value, err := readLpSecure(lp)
 	if err != nil {
 		return events.APIGatewayProxyResponse{
 			Body:       err.Error(),
